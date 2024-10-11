@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: panda-etl-frontend
+    env: node
+    buildCommand: |
+      cd frontend
+      cp .env.example .env
+      yarn install
+      yarn build
+    startCommand: cd frontend && yarn start
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+  - type: web
+    name: panda-etl-backend
+    env: python
+    buildCommand: |
+      cd backend
+      cp .env.example .env
+      pip install poetry
+      poetry install
+    startCommand: cd backend && poetry run uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+
+databases:
+  - name: panda-etl-db
+    databaseName: pandaetl
+    user: pandaetl
+
+envVarGroups:
+  - name: panda-etl-config
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: panda-etl-db
+          property: connectionString
